@@ -1,0 +1,29 @@
+---@class fzf.Config
+---@field ip? integer
+---@field port? string
+---@field fd_cmd string
+---@field rg_cmd string
+---@field bat_cmd string
+
+---@class fzf.Info
+---@field _? string
+---@field event? string
+---@field selected? string this is {+f}
+---@field action? string
+---@field border_label? string
+---@field columns? integer
+---@field key? string
+---@field lines? integer
+---@field match_count? string
+---@field port? integer
+---@field pos? integer
+---@field preview_columns? integer
+---@field preview_label? string
+---@field preview_left? string
+---@field preview_lines? string
+---@field preview_top? string
+---@field prompt? string
+---@field query? string
+---@field select_count? integer
+---@field total_count? integer
+---@field info? string

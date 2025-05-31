@@ -3,9 +3,7 @@
 local get_indent = function(line) return (line:match('^%s+') or ''):len() end
 
 local get_man_range = function(start_pat, end_pat)
-  local res = vim
-    .system { 'sh', '-c', ('fzf --man | awk "/%s/,/%s/ { print }"'):format(start_pat, end_pat) }
-    :wait()
+  local res = vim.system { 'sh', '-c', ('fzf --man | awk "/%s/,/%s/ { print }"'):format(start_pat, end_pat) }:wait()
   return vim.split(res.stdout, '\n', { trimempty = true })
 end
 
@@ -19,10 +17,7 @@ local parse_lines = function(lines)
       args = args:gsub('%s', ''):len() > 0 and true or false
       local bind_notes = remain:gsub('^%s+', '')
       bind_notes = vim.split(bind_notes, '%s+', { trimempty = true })
-      local n_id = vim
-        .iter(bind_notes)
-        :enumerate()
-        :find(function(_, v) return v:match('^%(.*[^)]$') end)
+      local n_id = vim.iter(bind_notes):enumerate():find(function(_, v) return v:match('^%(.*[^)]$') end)
       local binds = n_id and vim.iter(bind_notes):take(n_id - 1):totable() or bind_notes
       local notes = n_id and vim.iter(bind_notes):skip(n_id - 1):join(' '):match('^%((.*)%)$')
       return { name = name, args = args, binds = binds, notes = notes }
@@ -52,7 +47,7 @@ gen.actions = function()
     return acc
   end)
   local actions = parse_lines(lines)
-  print(('-- GENERATED FILES\n-- stylua: ignore\nreturn %s'):format(vim.inspect(actions)))
+  return actions
 end
 
 gen.events = function()
@@ -69,7 +64,7 @@ gen.events = function()
       return acc
     end)
   -- :map(function(line) return vim.inspect((line:gsub('^%s+', ''):gsub('%s+$', ''))) end):join('|')
-  print(('-- GENERATED FILES\n-- stylua: ignore\nreturn %s'):format(vim.inspect(events)))
+  return events
 end
 
 gen.keys = function()
@@ -83,35 +78,32 @@ gen.keys = function()
     :filter(function(line) return get_indent(line) == indent end)
     :map(function(v) return vim.split(v, '%s+', { trimempty = true }) end)
     :totable()
-  print(vim.inspect(keys))
+  return keys
 end
 
--- serailzed ipc data
-gen.info = function()
-  local env = {
-    'FZF_LINES',
-    'FZF_COLUMNS',
-    'FZF_TOTAL_COUNT',
-    'FZF_MATCH_COUNT',
-    'FZF_SELECT_COUNT',
-    'FZF_POS',
-    'FZF_QUERY',
-    'FZF_PROMPT',
-    'FZF_PREVIEW_LABEL',
-    'FZF_BORDER_LABEL',
-    'FZF_ACTION',
-    'FZF_KEY',
-    'FZF_PORT',
-    'FZF_PREVIEW_TOP',
-    'FZF_PREVIEW_LEFT',
-    'FZF_PREVIEW_LINES',
-    'FZF_PREVIEW_COLUMNS',
-  }
-  local info = vim.iter(env):fold({}, function(acc, v)
-    acc[v:gsub('FZF_', ''):lower()] = '$' .. v
-    return acc
-  end)
-  print(vim.inspect(info))
+gen.envs = function()
+  local lines = get_man_range('ENVIRONMENT VARIABLES EXPORTED TO CHILD PROCESSES', 'EXTENDED SEARCH MODE')
+  local skip, rskip = 2, 1
+  return vim
+    .iter(lines)
+    :skip(skip)
+    :rskip(rskip)
+    :map(function(line) return line:match('%s+(FZF_[_A-Z]+)') end)
+    :fold({}, function(acc, v)
+      acc[v:gsub('FZF_', ''):lower()] = '$' .. v
+      return acc
+    end)
 end
 
-if gen[arg[1]] then gen[arg[1]]() end
+print('-- GENERATED FILE')
+print('-- stylua: ignore start')
+print('---@class fzf.Capabilities')
+print('local M = {}')
+print('\n')
+print(('M.%s = %s'):format('actions', vim.inspect(gen.actions())))
+print('\n')
+print(('M.%s = %s'):format('events', vim.inspect(gen.events())))
+print('\n')
+print(('M.%s = %s'):format('envs', vim.inspect(gen.envs())))
+print('\n')
+print('return M')

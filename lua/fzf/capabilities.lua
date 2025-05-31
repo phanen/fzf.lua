@@ -1,6 +1,9 @@
--- GENERATED FILES
--- stylua: ignore
-return {
+-- GENERATED FILE
+-- stylua: ignore start
+---@class fzf.Capabilities
+local M = {}
+
+M.actions = {
   abort = {
     args = false,
     binds = { "ctrl-c", "ctrl-g", "ctrl-q", "esc" }
@@ -49,6 +52,11 @@ return {
     args = false,
     binds = { "ctrl-a", "home" }
   },
+  bell = {
+    args = false,
+    binds = {},
+    notes = "ring the terminal bell"
+  },
   cancel = {
     args = false,
     binds = {},
@@ -59,15 +67,45 @@ return {
     binds = {},
     notes = "change --border-label to the given string"
   },
+  ["change-ghost"] = {
+    args = true,
+    binds = {},
+    notes = "change ghost text to the given string"
+  },
   ["change-header"] = {
     args = true,
     binds = {},
     notes = "change header to the given string; doesn't affect --header-lines"
   },
+  ["change-header-label"] = {
+    args = true,
+    binds = {},
+    notes = "change --header-label to the given string"
+  },
+  ["change-input-label"] = {
+    args = true,
+    binds = {},
+    notes = "change --input-label to the given string"
+  },
+  ["change-list-label"] = {
+    args = true,
+    binds = {},
+    notes = "change --list-label to the given string"
+  },
   ["change-multi"] = {
     args = true,
     binds = {},
     notes = "enable multi-select mode with a limit or disable it with 0"
+  },
+  ["change-nth"] = {
+    args = true,
+    binds = {},
+    notes = "change --nth option; rotate through the multiple options separated by '|'"
+  },
+  ["change-pointer"] = {
+    args = true,
+    binds = {},
+    notes = "change --pointer option"
   },
   ["change-preview"] = {
     args = true,
@@ -149,6 +187,16 @@ return {
     args = false,
     binds = { "ctrl-e", "end" }
   },
+  exclude = {
+    args = false,
+    binds = {},
+    notes = "exclude the current item from the result"
+  },
+  ["exclude-multi"] = {
+    args = false,
+    binds = {},
+    notes = "exclude the selected items or the current item from the result"
+  },
   execute = {
     args = true,
     binds = {},
@@ -181,6 +229,10 @@ return {
     binds = {}
   },
   ["hide-header"] = {
+    args = false,
+    binds = {}
+  },
+  ["hide-input"] = {
     args = false,
     binds = {}
   },
@@ -298,7 +350,7 @@ return {
   print = {
     args = true,
     binds = {},
-    notes = "add string to the output queue and print on exit"
+    notes = "add string to the output queue and print on normal exit"
   },
   put = {
     args = true,
@@ -329,6 +381,11 @@ return {
     binds = {},
     notes = "replace query string with the current selection"
   },
+  search = {
+    args = true,
+    binds = {},
+    notes = "trigger fzf search with the given string"
+  },
   select = {
     args = false,
     binds = {}
@@ -339,6 +396,10 @@ return {
     notes = "select all matches"
   },
   ["show-header"] = {
+    args = false,
+    binds = {}
+  },
+  ["show-input"] = {
     args = false,
     binds = {}
   },
@@ -363,7 +424,15 @@ return {
     binds = {},
     notes = "toggle all matches"
   },
+  ["toggle-bind"] = {
+    args = false,
+    binds = {}
+  },
   ["toggle-header"] = {
+    args = false,
+    binds = {}
+  },
+  ["toggle-hscroll"] = {
     args = false,
     binds = {}
   },
@@ -371,6 +440,14 @@ return {
     args = false,
     binds = {},
     notes = "--layout=reverse* ? toggle+up : toggle+down"
+  },
+  ["toggle-input"] = {
+    args = false,
+    binds = {}
+  },
+  ["toggle-multi-line"] = {
+    args = false,
+    binds = {}
   },
   ["toggle-out"] = {
     args = false,
@@ -423,10 +500,40 @@ return {
     binds = {},
     notes = "transform border label using an external command"
   },
+  ["transform-ghost"] = {
+    args = true,
+    binds = {},
+    notes = "transform ghost text using an external command"
+  },
   ["transform-header"] = {
     args = true,
     binds = {},
     notes = "transform header using an external command"
+  },
+  ["transform-header-label"] = {
+    args = true,
+    binds = {},
+    notes = "transform header label using an external command"
+  },
+  ["transform-input-label"] = {
+    args = true,
+    binds = {},
+    notes = "transform input label using an external command"
+  },
+  ["transform-list-label"] = {
+    args = true,
+    binds = {},
+    notes = "transform list label using an external command"
+  },
+  ["transform-nth"] = {
+    args = true,
+    binds = {},
+    notes = "transform nth using an external command"
+  },
+  ["transform-pointer"] = {
+    args = true,
+    binds = {},
+    notes = "transform pointer using an external command"
   },
   ["transform-preview-label"] = {
     args = true,
@@ -442,6 +549,11 @@ return {
     args = true,
     binds = {},
     notes = "transform query string using an external command"
+  },
+  ["transform-search"] = {
+    args = true,
+    binds = {},
+    notes = "trigger fzf search with the output of an external command"
   },
   unbind = {
     args = true,
@@ -470,3 +582,47 @@ return {
     binds = { "ctrl-y", "ACTION", "COMPOSITION" }
   }
 }
+
+M.events = {
+  ["backward-eof"] = true,
+  change = true,
+  ["click-header"] = true,
+  focus = true,
+  jump = true,
+  ["jump-cancel"] = true,
+  load = true,
+  one = true,
+  resize = true,
+  result = true,
+  start = true,
+  zero = true
+}
+
+M.envs = {
+  action = "$FZF_ACTION",
+  border_label = "$FZF_BORDER_LABEL",
+  columns = "$FZF_COLUMNS",
+  ghost = "$FZF_GHOST",
+  header_label = "$FZF_HEADER_LABEL",
+  input_label = "$FZF_INPUT_LABEL",
+  input_state = "$FZF_INPUT_STATE",
+  key = "$FZF_KEY",
+  lines = "$FZF_LINES",
+  list_label = "$FZF_LIST_LABEL",
+  match_count = "$FZF_MATCH_COUNT",
+  nth = "$FZF_NTH",
+  pointer = "$FZF_POINTER",
+  port = "$FZF_PORT",
+  pos = "$FZF_POS",
+  preview_columns = "$FZF_PREVIEW_COLUMNS",
+  preview_label = "$FZF_PREVIEW_LABEL",
+  preview_left = "$FZF_PREVIEW_LEFT",
+  preview_lines = "$FZF_PREVIEW_LINES",
+  preview_top = "$FZF_PREVIEW_TOP",
+  prompt = "$FZF_PROMPT",
+  query = "$FZF_QUERY",
+  select_count = "$FZF_SELECT_COUNT",
+  total_count = "$FZF_TOTAL_COUNT"
+}
+
+return M
