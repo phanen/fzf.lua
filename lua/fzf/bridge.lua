@@ -115,8 +115,10 @@ end
 ---@return string
 function M:build_payload(event)
   return utils.serialize(vim.tbl_extend('force', cap.envs, {
+    -- FIXME: when query? match? selected? contain \, {}...
     _ = '{q}',
     selected = '{+f}',
+    match = '{}',
     event = event,
   }))
 end

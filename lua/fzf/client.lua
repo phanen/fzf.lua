@@ -71,6 +71,7 @@ function M:win_open()
         bufnr = buf,
         border = 'double',
       }), Popup({
+        bufnr = vim.api.nvim_create_buf(false, true), -- make it unmanaged
         border = 'double',
       })
     self.layout = Layout(
@@ -230,7 +231,19 @@ function M:files(_opts)
   elseif self.picker == 'files' and cwd == self.cwd then
     return
   end
-  self.bridge:listen_on({ 'focus' }, function()
+  self.bridge:listen_on({ 'focus' }, function(info)
+    vim.schedule(function()
+      local file = utils.parse_line(info.match:sub(2, -2))
+      local ft = vim.filetype.match({ filename = file.path, buf = file.bufnr })
+      utils.read_file(
+        file.path,
+        vim.schedule_wrap(function(lines)
+          if vim.bo.ft ~= ft then vim.bo[self.popup_preview.bufnr].ft = ft end
+          vim.api.nvim_buf_set_lines(self.popup_preview.bufnr, 0, -1, false, lines)
+        end)
+      )
+    end)
+    -- u.pp(self.popup_preview.bufnr)
     -- self.layout
   end)
   self.picker = 'files'

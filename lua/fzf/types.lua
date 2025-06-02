@@ -9,6 +9,7 @@
 ---@field _? string
 ---@field event? string
 ---@field selected? string this is {+f}
+---@field match? string this is {+}
 ---@field action? string
 ---@field border_label? string
 ---@field columns? integer
