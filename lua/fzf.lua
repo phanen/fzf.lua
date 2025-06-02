@@ -13,7 +13,7 @@ M.create = function()
   -- we list is huge... http request also become slow?? no no not correct
   vim.keymap.set('t', '<c-j>', function() _G.fzf.bridge.act:down() end, { buffer = buf })
   vim.keymap.set('t', '<c-k>', function() _G.fzf.bridge.act:up() end, { buffer = buf })
-  vim.keymap.set('t', '<esc>', function() _G.fzf.win:close() end, { buffer = buf })
+  vim.keymap.set('t', '<esc>', function() _G.fzf:win_close() end, { buffer = buf })
   vim.keymap.set('t', '<a-l>', function() _G.fzf.bridge.act:clear_selection() end, { buffer = buf })
   vim.keymap.set('t', '<c-s>', function() _G.fzf:sel_to_qf() end, { buffer = buf })
   -- FIXME: not correct? sync?

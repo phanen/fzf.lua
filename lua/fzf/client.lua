@@ -2,9 +2,9 @@ local fn, uv = vim.fn, vim.uv
 local Bridge = require('fzf.bridge')
 local Term = require('fzf.lib.term')
 local utils = require('fzf.utils')
-local win = require('fzf.lib.win').new({
-  config = { zindex = 100, row = 0.30, width = 0.95, height = 0.7, style = 'minimal' },
-})
+-- local win = require('fzf.lib.win').new({
+--   config = { zindex = 100, row = 0.30, width = 0.95, height = 0.7, style = 'minimal' },
+-- })
 
 ---@class fzf.Client
 ---@field bridge? fzf.Bridge
@@ -37,8 +37,8 @@ function M.new(opts)
       -- FZF_DEFAULT_OPTS_FILE = '',
       FZF_DEFAULT_OPTS = vim.env.FZF_DEFAULT_OPTS .. [[
       --listen --ansi --height=100% --multi --exact
-      #--preview-window 'hidden:nowrap:border-left:right:60%,<36(hidden:nowrap:border-left:down:45%)'
-      --preview-window 'nowrap:right:60%,<36(hidden:nowrap:down:45%)'
+      --preview-window 'hidden:nowrap:border-left:right:60%,<36(hidden:nowrap:border-left:down:45%)'
+      #--preview-window 'nowrap:right:60%,<36(hidden:nowrap:down:45%)'
       -d ":"
       ]] .. bridge:gen_binds(),
     },
@@ -52,9 +52,42 @@ function M:run() self.term:spawn() end
 
 function M:destory() self.term:destory() end
 
+local Popup = require('nui.popup')
+local Layout = require('nui.layout')
+
+function M:win_close()
+  -- self:win_close()
+  self.layout:unmount()
+end
+
 function M:win_open()
   local buf = self.term:get_buf()
-  if buf then self.win:open(buf) end
+  if not buf then return end
+  -- self.win:open(buf)
+  if not self.layout then
+    self.popup_fzf, self.popup_preview =
+      Popup({
+        enter = true,
+        bufnr = buf,
+        border = 'double',
+      }), Popup({
+        border = 'double',
+      })
+    self.layout = Layout(
+      {
+        position = '35%',
+        size = {
+          width = '95%',
+          height = '70%',
+        },
+      },
+      Layout.Box({
+        Layout.Box(self.popup_fzf, { size = '40%' }),
+        Layout.Box(self.popup_preview, { size = '60%' }),
+      }, { dir = 'row' })
+    )
+  end
+  self.layout:mount()
   vim.cmd.startinsert()
 end
 
@@ -105,7 +138,7 @@ local function setqflist0(list)
 end
 
 function M:sel_to_qf()
-  self.win:close()
+  self:win_close()
   -- need a selected changed event (e.g. when use select-all)?
   utils.read_file('/tmp/t2', function(selected)
     if selected[#selected] == '' then selected[#selected] = nil end
@@ -142,7 +175,7 @@ function M:sel_to_qf()
 end
 
 function M:edit_or_tabedit()
-  self.win:close()
+  self:win_close()
   -- {+f} is faster?
   self.bridge.act:clear_selection()
   utils.read_file('/tmp/t2', function(selected)
@@ -180,7 +213,7 @@ function M:tabedit()
         local r = utils.parse_line(e)
         vim.cmd.tabedit(r.line and r.line > 0 and ('+%s %s'):format(r.line, r.path) or r.path)
       end)
-      self.win:close()
+      self:win_close()
     end)
   end)
 end
@@ -197,6 +230,9 @@ function M:files(_opts)
   elseif self.picker == 'files' and cwd == self.cwd then
     return
   end
+  self.bridge:listen_on({ 'focus' }, function()
+    -- self.layout
+  end)
   self.picker = 'files'
   -- self.bridge.act:change_nth('1..')
   self.cwd = cwd
@@ -225,8 +261,8 @@ function M:lgrep(_opts)
   self.cwd = uv.cwd()
   -- self.bridge.act:reload('echo a:b')
 
-  local base_preview_win = 'nowrap:right:60%,<36(hidden:nowrap:down:45%)'
-  self.bridge.act:change_preview_window(('%s:%s'):format(base_preview_win, '+{2}/2'))
+  -- local base_preview_win = 'nowrap:right:60%,<36(hidden:nowrap:down:45%)'
+  -- self.bridge.act:change_preview_window(('%s:%s'):format(base_preview_win, '+{2}/2'))
   -- self.bridge.act:change_preview((self.opts.bat_cmd .. ' --highlight-line={2}' .. ' {1}'))
   self.bridge.act:reload(':')
   self.bridge:listen_on({ 'change' }, function(info)
@@ -234,11 +270,9 @@ function M:lgrep(_opts)
     -- self.bridge.act:change_preview_window(('%s:%s'):format(base_preview_win, '+{2}/2'))
     -- self.bridge.act:change_preview((self.opts.bat_cmd .. ' --highlight-line={2}' .. ' {1}'))
   end)
-  self.bridge.act:change_preview_window(('%s:%s'):format(base_preview_win, '+{2}/2'))
   -- self.bridge:listen_on({ 'zero' }, function() self.bridge.act:change_preview('echo ""') end)
   -- self._last_preview_cmd = (self.opts.bat_cmd .. ' %q'):format(file.path)
-  self.bridge.act:change_preview_window(('%s:%s'):format(base_preview_win, '+{2}/2'))
-  self.bridge.act:change_preview((self.opts.bat_cmd .. ' --highlight-line={2}' .. ' {1}'))
+  -- self.bridge.act:change_preview((self.opts.bat_cmd .. ' --highlight-line={2}' .. ' {1}'))
   -- self.bridge:listen_on({ 'focus' }, function()
   --   utils.read_file('/tmp/t2', function(lines)
   --     vim.schedule(function()
